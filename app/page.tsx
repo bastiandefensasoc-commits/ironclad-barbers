@@ -119,7 +119,7 @@ export default function HomePage() {
             <div className="relative aspect-[4/5] overflow-hidden rounded-3xl">
               <Image
                 src="/images/hero-barbershop.svg"
-                alt="Inside Ironclad Barbers, a two-chair barbershop on South Congress"
+                alt="A barber chair facing a large framed mirror, with a shelf of grooming products and a brass barber pole"
                 fill
                 priority
                 sizes="(min-width: 1024px) 45vw, 100vw"
@@ -211,7 +211,7 @@ export default function HomePage() {
             <div className="relative aspect-[16/10] overflow-hidden rounded-3xl">
               <Image
                 src="/images/shop-interior.svg"
-                alt="The inside of Ironclad Barbers — two chairs, a waiting bench, and a brass barber pole"
+                alt="Three barber stations with framed mirrors along the wall, product shelves, and a sunlit window"
                 fill
                 sizes="(min-width: 1024px) 45vw, 100vw"
                 className="object-cover"

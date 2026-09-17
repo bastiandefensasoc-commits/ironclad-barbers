@@ -19,7 +19,7 @@ export default function AboutPage() {
         <div className="relative mt-8 aspect-[16/9] overflow-hidden rounded-3xl bg-sand">
           <Image
             src="/images/shop-interior.svg"
-            alt="Inside Ironclad Barbers — two barber chairs and a waiting bench"
+            alt="Three barber stations with framed mirrors along the wall, product shelves, and a sunlit window"
             fill
             sizes="100vw"
             className="object-cover"

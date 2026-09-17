@@ -1,9 +1,41 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" role="img" aria-hidden="true">
-  <rect width="400" height="500" rx="24" fill="#ECE4D5"/>
-  <circle cx="200" cy="190" r="86" fill="#1B1917"/>
-  <path d="M116 175c2-52 38-90 84-90s82 38 84 90c-8-30-26-48-42-48-10 12-26 18-42 18s-32-6-42-18c-16 0-34 18-42 48z" fill="#211F1C"/>
-  <path d="M148 220c6 24 28 42 52 42s46-18 52-42c4 18-2 40-18 54-12 12-24 16-34 16s-22-4-34-16c-16-14-22-36-18-54z" fill="#ECE4D5"/>
-  <path d="M164 250c10 8 22 12 36 12s26-4 36-12" stroke="#1B1917" stroke-width="8" fill="none" stroke-linecap="round"/>
-  <path d="M135 418c8-58 32-92 65-92s57 34 65 92z" fill="#AD8A4E"/>
-  <rect x="95" y="418" width="210" height="60" rx="12" fill="#1B1917"/>
+  <defs>
+    <radialGradient id="b3bg" cx="50%" cy="38%" r="65%">
+      <stop offset="0%" stop-color="#F2EAD9"/>
+      <stop offset="100%" stop-color="#DCD2C0"/>
+    </radialGradient>
+    <linearGradient id="b3skin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#C89468"/>
+      <stop offset="100%" stop-color="#B47F52"/>
+    </linearGradient>
+    <linearGradient id="b3collar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5B6B5E"/>
+      <stop offset="100%" stop-color="#3E4A40"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="400" height="500" rx="24" fill="url(#b3bg)"/>
+  <circle cx="200" cy="205" r="128" fill="#AD8A4E" opacity=".12"/>
+
+  <!-- neck + open collar shirt -->
+  <path d="M162 298v48h76v-48z" fill="url(#b3skin)"/>
+  <path d="M112 464c6-58 36-98 88-98s82 40 88 98c-16 12-34 20-50 26-10-16-22-30-38-38 4 14 4 26 0 36-14 0-24 0-38 0-4-10-4-22 0-36-16 8-28 22-38 38-16-6-34-14-50-26z" fill="url(#b3collar)"/>
+  <path d="M172 380c6 18 14 32 28 40M228 380c-6 18-14 32-28 40" stroke="#2C352E" stroke-width="3" fill="none" opacity=".5"/>
+
+  <!-- face: warm, rounder -->
+  <path d="M120 214c0-58 34-98 80-98s80 40 80 98c0 28-8 52-20 70-6 24-30 46-60 46s-54-22-60-46c-12-18-20-42-20-70z" fill="url(#b3skin)"/>
+  <ellipse cx="124" cy="222" rx="9" ry="15" fill="url(#b3skin)"/>
+  <ellipse cx="276" cy="222" rx="9" ry="15" fill="url(#b3skin)"/>
+
+  <!-- light stubble shading across jaw -->
+  <path d="M140 270c8 28 30 50 60 50s52-22 60-50c-6 30-30 58-60 58s-54-28-60-58z" fill="#8C6438" opacity=".38"/>
+  <path d="M150 250c4 6 4 14 2 20M250 250c-4 6-4 14-2 20" stroke="#8C6438" stroke-width="2" fill="none" opacity=".3"/>
+
+  <!-- hair: short, slightly tousled, receding a touch -->
+  <path d="M118 200c0-58 36-100 82-100s82 42 82 100c-6-16-18-28-32-32 4-8 2-16-4-22-2 8-8 14-16 16-14-16-38-20-52-8-4-8-12-12-20-10 2 8-2 16-8 20-14-2-26 10-32 36z" fill="#1B1917"/>
+  <path d="M144 154c10-8 22-12 34-10M204 142c12-2 24 2 34 10" stroke="#3A362F" stroke-width="3" fill="none" stroke-linecap="round" opacity=".6"/>
+
+  <!-- mustache only -->
+  <path d="M156 262c14 12 30 18 44 18s30-6 44-18c-4 12-18 24-32 26-4-4-8-8-12-8s-8 4-12 8c-14-2-28-14-32-26z" fill="#1B1917"/>
+  <path d="M172 274c8 4 16 6 28 6M200 280c12 0 20-2 28-6" stroke="#3A362F" stroke-width="2" fill="none" opacity=".5"/>
 </svg>

@@ -1,9 +1,41 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" role="img" aria-hidden="true">
-  <rect width="400" height="500" rx="24" fill="#ECE4D5"/>
-  <path d="M200 90c48 0 88 40 88 100 0 8 0 16-2 24-6-10-16-18-28-22 2-14-4-28-16-34 4 14 0 26-10 34-16-10-34-14-52-6-8-16-24-24-42-20 6-10 14-18 24-24-6-4-14-6-22-4 14-30 36-48 60-48z" fill="#211F1C"/>
-  <circle cx="200" cy="205" r="82" fill="#1B1917"/>
-  <path d="M150 235c6 22 26 38 50 38s44-16 50-38c4 18-2 38-16 52-12 12-24 16-34 16s-22-4-34-16c-14-14-20-34-16-52z" fill="#ECE4D5"/>
-  <path d="M150 290c14 14 32 22 50 22s36-8 50-22c-6 20-26 34-50 34s-44-14-50-34z" fill="#211F1C"/>
-  <path d="M132 420c8-58 34-94 68-94s60 36 68 94z" fill="#AD8A4E"/>
-  <rect x="92" y="420" width="216" height="60" rx="12" fill="#1B1917"/>
+  <defs>
+    <radialGradient id="b4bg" cx="50%" cy="38%" r="65%">
+      <stop offset="0%" stop-color="#F2EAD9"/>
+      <stop offset="100%" stop-color="#DCD2C0"/>
+    </radialGradient>
+    <linearGradient id="b4skin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#DDAE7E"/>
+      <stop offset="100%" stop-color="#C6935F"/>
+    </linearGradient>
+    <linearGradient id="b4collar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7A6A4E"/>
+      <stop offset="100%" stop-color="#584C38"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="400" height="500" rx="24" fill="url(#b4bg)"/>
+  <circle cx="200" cy="205" r="128" fill="#AD8A4E" opacity=".12"/>
+
+  <!-- neck + crew-neck tee -->
+  <path d="M164 292v54h72v-54z" fill="url(#b4skin)"/>
+  <path d="M116 462c6-70 34-118 84-118s78 48 84 118c-16 12-34 20-50 24-8-6-14-14-18-22 2-6 2-12 0-18-10 4-24 6-32 6h-8c-8 0-22-2-32-6-2 6-2 12 0 18-4 8-10 16-18 22-16-4-34-12-50-24z" fill="url(#b4collar)"/>
+
+  <!-- face: youthful, softer jaw -->
+  <path d="M120 208c0-56 34-96 80-96s80 40 80 96c0 26-6 50-18 68-6 24-30 46-62 46s-56-22-62-46c-12-18-18-42-18-68z" fill="url(#b4skin)"/>
+  <ellipse cx="124" cy="216" rx="9" ry="15" fill="url(#b4skin)"/>
+  <ellipse cx="276" cy="216" rx="9" ry="15" fill="url(#b4skin)"/>
+
+  <!-- cheek shading -->
+  <path d="M140 254c8 28 30 50 60 50s52-22 60-50c-6 30-30 58-60 58s-54-28-60-58z" fill="#A67B49" opacity=".28"/>
+
+  <!-- hair: textured crop, short taper on sides -->
+  <path d="M118 190c-4-58 32-100 82-100s86 42 82 100c-6-10-14-18-24-22 2-10-2-20-10-24 0 8-4 16-12 20-16-12-36-14-52-4-6-6-14-8-22-4 2 8-2 16-10 20-14-2-26 4-34 14z" fill="#1B1917"/>
+  <path d="M136 154c-4 8-4 16 0 22M164 138c8-6 18-8 28-6M226 140c10 0 20 6 26 14" stroke="#3A362F" stroke-width="3" fill="none" stroke-linecap="round" opacity=".6"/>
+  <path d="M144 168l6 10M162 156l6 12M232 158l8 10" stroke="#1B1917" stroke-width="4" fill="none" stroke-linecap="round"/>
+
+  <!-- light beard, not as full as barber-1 -->
+  <path d="M132 244c-4 34 8 66 34 84 10 8 22 12 34 12s24-4 34-12c26-18 38-50 34-84-8 18-18 30-30 36 2-12 0-24-6-32-4 12-14 20-24 22-10-2-20-10-24-22-6 8-8 20-6 32-12-6-22-18-30-36z" fill="#1B1917"/>
+  <path d="M158 296c6 10 14 18 24 22M242 296c-6 10-14 18-24 22" stroke="#3A362F" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".5"/>
+  <path d="M166 258c10 8 22 12 34 12s24-4 34-12c-4 8-14 16-24 18-4-2-8-6-10-6s-6 4-10 6c-10-2-20-10-24-18z" fill="#1B1917"/>
 </svg>

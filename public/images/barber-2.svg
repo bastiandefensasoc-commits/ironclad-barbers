@@ -1,8 +1,41 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" role="img" aria-hidden="true">
-  <rect width="400" height="500" rx="24" fill="#ECE4D5"/>
-  <ellipse cx="200" cy="200" rx="78" ry="92" fill="#211F1C"/>
-  <path d="M124 165c4-46 34-78 76-78s72 32 76 78c-16-14-40-22-76-22s-60 8-76 22z" fill="#1B1917"/>
-  <path d="M150 230c6 24 26 42 50 42s44-18 50-42c4 18-1 40-16 54-12 12-24 16-34 16s-22-4-34-16c-15-14-20-36-16-54z" fill="#ECE4D5"/>
-  <path d="M140 415c8-56 32-90 60-90s52 34 60 90z" fill="#AD8A4E"/>
-  <rect x="100" y="415" width="200" height="60" rx="12" fill="#1B1917"/>
+  <defs>
+    <radialGradient id="b2bg" cx="50%" cy="38%" r="65%">
+      <stop offset="0%" stop-color="#F2EAD9"/>
+      <stop offset="100%" stop-color="#DCD2C0"/>
+    </radialGradient>
+    <linearGradient id="b2skin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E3B98C"/>
+      <stop offset="100%" stop-color="#CFA06D"/>
+    </linearGradient>
+    <linearGradient id="b2collar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2B2825"/>
+      <stop offset="100%" stop-color="#1B1917"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="400" height="500" rx="24" fill="url(#b2bg)"/>
+  <circle cx="200" cy="205" r="128" fill="#AD8A4E" opacity=".12"/>
+
+  <!-- neck -->
+  <path d="M166 296v50h68v-50z" fill="url(#b2skin)"/>
+
+  <!-- collar: shirt + waistcoat vee -->
+  <path d="M114 462c6-56 34-96 86-96s80 40 86 96c-14 12-30 20-44 26l-42-40-42 40c-14-6-30-14-44-26z" fill="url(#b2collar)"/>
+  <path d="M158 396l42 66 42-66" stroke="#F6F2EA" stroke-width="6" fill="none" opacity=".9"/>
+  <path d="M158 396l42 66 42-66" stroke="#AD8A4E" stroke-width="2" fill="none" opacity=".8"/>
+
+  <!-- face: sharp jaw -->
+  <path d="M120 206c0-56 34-98 80-98s80 42 80 98c0 26-6 50-18 68-4 26-30 50-62 50s-58-24-62-50c-12-18-18-42-18-68z" fill="url(#b2skin)"/>
+  <ellipse cx="124" cy="214" rx="9" ry="15" fill="url(#b2skin)"/>
+  <ellipse cx="276" cy="214" rx="9" ry="15" fill="url(#b2skin)"/>
+
+  <!-- jaw shading for definition -->
+  <path d="M138 258c8 26 30 48 62 48s54-22 62-48c-8 32-32 60-62 60s-54-28-62-60z" fill="#A87E4C" opacity=".3"/>
+  <path d="M150 220c-2 14 0 28 6 40M250 220c2 14 0 28-6 40" stroke="#A87E4C" stroke-width="3" fill="none" opacity=".35" stroke-linecap="round"/>
+
+  <!-- slicked side-part hair -->
+  <path d="M116 196c-6-60 30-104 84-104s90 44 84 104c-6-8-14-14-22-16 4-18-4-34-20-40 6 12 4 24-4 32-18-20-46-24-56-8-10-4-20 0-24 12-10-2-18 8-22 20-8-2-14 0-20 8-4-4-2-8 0-8z" fill="#1B1917"/>
+  <path d="M150 130c14-8 32-10 48-4M210 128c12 2 22 8 30 16" stroke="#3A362F" stroke-width="3" fill="none" stroke-linecap="round" opacity=".6"/>
+  <path d="M138 154c6-4 14-6 20-6" stroke="#F2EAD9" stroke-width="2.5" fill="none" opacity=".4"/>
 </svg>

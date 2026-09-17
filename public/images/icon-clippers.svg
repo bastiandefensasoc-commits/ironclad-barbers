@@ -1,7 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-hidden="true">
-  <circle cx="100" cy="100" r="100" fill="#ECE4D5"/>
+  <defs>
+    <radialGradient id="iconBg2" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#F2EAD9"/>
+      <stop offset="100%" stop-color="#DCD2C0"/>
+    </radialGradient>
+    <linearGradient id="clipperBody" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#C79B57"/>
+      <stop offset="100%" stop-color="#8B6E3A"/>
+    </linearGradient>
+  </defs>
+  <circle cx="100" cy="100" r="100" fill="url(#iconBg2)"/>
   <rect x="85" y="50" width="30" height="60" rx="6" fill="#1B1917"/>
-  <rect x="78" y="105" width="44" height="50" rx="8" fill="#AD8A4E"/>
+  <rect x="78" y="105" width="44" height="50" rx="8" fill="url(#clipperBody)"/>
   <rect x="82" y="140" width="36" height="26" rx="6" fill="#1B1917"/>
   <path d="M90 55v50M100 50v55M110 55v50" stroke="#ECE4D5" stroke-width="3"/>
+  <rect x="82" y="112" width="36" height="4" rx="2" fill="#F2EAD9" opacity=".35"/>
 </svg>

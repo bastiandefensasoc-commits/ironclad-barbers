@@ -1,9 +1,43 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" role="img" aria-hidden="true">
-  <rect width="400" height="500" rx="24" fill="#ECE4D5"/>
-  <circle cx="200" cy="185" r="90" fill="#1B1917"/>
-  <path d="M120 175c0-50 36-86 80-86s80 36 80 86c-10-8-24-14-38-14-14 18-38 28-42 28-4 0-28-10-42-28-14 0-28 6-38 14z" fill="#211F1C"/>
-  <path d="M140 210c8 26 32 46 60 46s52-20 60-46c4 20-2 44-18 60-14 14-28 20-42 20s-28-6-42-20c-16-16-22-40-18-60z" fill="#ECE4D5"/>
-  <path d="M150 230c10 20 30 34 50 34s40-14 50-34" stroke="#1B1917" stroke-width="6" fill="none" stroke-linecap="round"/>
-  <path d="M130 420c8-60 34-96 70-96s62 36 70 96z" fill="#AD8A4E"/>
-  <rect x="90" y="420" width="220" height="60" rx="12" fill="#1B1917"/>
+  <defs>
+    <radialGradient id="b1bg" cx="50%" cy="38%" r="65%">
+      <stop offset="0%" stop-color="#F2EAD9"/>
+      <stop offset="100%" stop-color="#DCD2C0"/>
+    </radialGradient>
+    <linearGradient id="b1skin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#D3A87B"/>
+      <stop offset="100%" stop-color="#C0925F"/>
+    </linearGradient>
+    <linearGradient id="b1collar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#BC9A5C"/>
+      <stop offset="100%" stop-color="#8B6E3A"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="400" height="500" rx="24" fill="url(#b1bg)"/>
+  <circle cx="200" cy="205" r="128" fill="#AD8A4E" opacity=".12"/>
+
+  <!-- neck + collar -->
+  <path d="M164 300v46h72v-46z" fill="url(#b1skin)"/>
+  <path d="M118 460c4-58 34-98 82-98s78 40 82 98c-10 10-24 18-36 24-16-14-32-20-46-20s-30 6-46 20c-12-6-26-14-36-24z" fill="url(#b1collar)"/>
+  <path d="M154 400l46 40 46-40" stroke="#6E5730" stroke-width="4" fill="none" opacity=".5"/>
+
+  <!-- face -->
+  <path d="M118 210c0-58 36-100 82-100s82 42 82 100c0 30-8 56-22 76-8 24-32 44-60 44s-52-20-60-44c-14-20-22-46-22-76z" fill="url(#b1skin)"/>
+  <ellipse cx="122" cy="220" rx="10" ry="16" fill="url(#b1skin)"/>
+  <ellipse cx="278" cy="220" rx="10" ry="16" fill="url(#b1skin)"/>
+
+  <!-- cheek/jaw shading -->
+  <path d="M140 260c10 30 32 52 60 52s50-22 60-52c-6 34-30 66-60 66s-54-32-60-66z" fill="#96703F" opacity=".28"/>
+
+  <!-- hair: full, slightly wavy, receding a touch at temples -->
+  <path d="M112 200c-4-64 34-114 88-114s92 50 88 114c-8-14-20-24-32-28 2-10-2-20-10-26 2 10-2 18-10 22-16-14-38-20-36-40-10 18-34 22-52 16 4 10 0 20-10 26-14-2-24 8-26 30z" fill="#1B1917"/>
+  <path d="M132 152c8-6 18-10 28-10M172 138c10-4 22-4 32 2M232 146c10 2 20 8 26 16" stroke="#3A362F" stroke-width="3" fill="none" stroke-linecap="round" opacity=".6"/>
+
+  <!-- full beard with texture -->
+  <path d="M124 236c-6 46 10 92 46 116 10 8 20 12 30 12s20-4 30-12c36-24 52-70 46-116-10 26-24 42-38 50 4-16 2-32-6-44-6 16-20 26-32 28-12-2-26-12-32-28-8 12-10 28-6 44-14-8-28-24-38-50z" fill="#1B1917"/>
+  <path d="M154 300c6 14 16 26 28 32M246 300c-6 14-16 26-28 32M170 320c10 6 20 8 30 8M230 320c-10 6-20 8-30 8" stroke="#3A362F" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".55"/>
+
+  <!-- mustache -->
+  <path d="M158 258c14 10 28 14 42 14s28-4 42-14c-4 10-16 20-28 22-6-4-10-8-14-8s-8 4-14 8c-12-2-24-12-28-22z" fill="#1B1917"/>
 </svg>
