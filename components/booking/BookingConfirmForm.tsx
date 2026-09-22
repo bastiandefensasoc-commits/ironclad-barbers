@@ -28,11 +28,20 @@ export function BookingConfirmForm({
   barberChoice,
   date,
   time,
+  formRenderedAt,
 }: {
   serviceSlug: string;
   barberChoice: BarberChoice;
   date: string;
   time: string;
+  /** Server timestamp (ms) from when SummaryStep rendered this form — a
+   * client-generated one wouldn't prove anything, since a script skipping
+   * straight to a POST could just fabricate whatever value makes the
+   * elapsed-time check in submitBooking pass. This isn't watertight either
+   * (nothing stops a sufficiently motivated bot from reading this value out
+   * of the page and replaying it correctly), but it stops the much more
+   * common case of a bot that submits without rendering the page at all. */
+  formRenderedAt: number;
 }) {
   const [state, formAction, isPending] = useActionState(submitBooking, initialState);
 
@@ -58,6 +67,18 @@ export function BookingConfirmForm({
       <input type="hidden" name="barberChoice" value={barberChoice} />
       <input type="hidden" name="date" value={date} />
       <input type="hidden" name="time" value={time} />
+      <input type="hidden" name="formRenderedAt" value={formRenderedAt} />
+
+      {/* Honeypot: invisible to sighted users (off-screen, not display:none
+          — see the note below on why that distinction matters), removed
+          from tab order, and hidden from assistive tech, so no real visitor
+          can encounter or fill it no matter how they browse. A bot that
+          fills every input it finds in the DOM will fill this one anyway,
+          and submitBooking treats any non-empty value here as automated. */}
+      <div aria-hidden="true" className="absolute left-[-9999px] top-auto h-0 w-0 overflow-hidden">
+        <label htmlFor="website">Website</label>
+        <input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" />
+      </div>
 
       <Field label="Full name" htmlFor="customerName" error={state.fieldErrors?.customerName}>
         <input

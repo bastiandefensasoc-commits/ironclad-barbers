@@ -3,7 +3,7 @@ import { getAppointmentByToken } from "@/lib/data/appointments";
 import { getServiceById } from "@/lib/data/services";
 import { getBarberById } from "@/lib/data/barbers";
 import { formatTime12h } from "@/lib/booking/availability";
-import { formatDateLabel } from "@/lib/booking/date-utils";
+import { formatDateLabel, isPastDate } from "@/lib/booking/date-utils";
 import { formatDuration } from "@/components/ui/PriceTag";
 import { CancelForm } from "@/components/booking/CancelForm";
 
@@ -50,6 +50,12 @@ export default async function CancelPage({ params }: { params: Promise<{ token: 
     getBarberById(appointment.barberId),
   ]);
 
+  // Mirrors the same check cancelAppointment enforces server-side — this
+  // is purely so the page doesn't show a "Cancel" button that would just
+  // come back with a generic error, not a security boundary itself (the
+  // Server Action is what actually enforces it either way).
+  const isCancellable = appointment.status === "confirmed" && !isPastDate(appointment.date);
+
   return (
     <div className="mx-auto max-w-lg px-4 py-16 sm:px-6">
       <h1 className="font-condensed text-3xl uppercase tracking-wide text-charcoal">
@@ -58,7 +64,7 @@ export default async function CancelPage({ params }: { params: Promise<{ token: 
       <p className="mt-2 text-ink/70">
         {appointment.status === "cancelled"
           ? "This booking has already been cancelled."
-          : appointment.status === "completed"
+          : appointment.status === "completed" || (appointment.status === "confirmed" && !isCancellable)
             ? "This appointment already happened — there's nothing to cancel."
             : `Booked for ${appointment.customerName}.`}
       </p>
@@ -70,7 +76,7 @@ export default async function CancelPage({ params }: { params: Promise<{ token: 
         <Row label="Time" value={formatTime12h(appointment.startTime)} />
       </dl>
 
-      {appointment.status === "confirmed" && (
+      {isCancellable && (
         <div className="mt-8">
           <CancelForm token={token} />
         </div>

@@ -1,6 +1,6 @@
 # Ironclad Barbers
 
-A fictional two-chair barbershop in Austin, TX — portfolio piece #5 in a daily project series. This is **phase 2 of 3: frontend + real backend**. Security hardening is phase 3 — see the closing note below, this project is not done.
+A fictional two-chair barbershop in Austin, TX — portfolio piece #5 in a daily project series. Built in 3 phases: frontend (URL-as-state booking flow), real backend (Supabase + Server Actions), and security hardening. All three are done.
 
 ## Stack
 
@@ -31,6 +31,19 @@ Real persistence. Phase 1's mock arrays in `lib/data/*.ts` are now Supabase quer
 - `lib/booking/date-utils.ts` — unchanged; still timezone-aware via `Intl.DateTimeFormat` against `America/Chicago`, not the server's own clock
 - `components/booking/DateStep.tsx` — the one real architecture change phase 2 forced: the calendar now fetches a month of availability via a Server Action and shows a loading state while it's in flight, instead of computing it synchronously from an in-memory array
 
+## What's new in phase 3 (security hardening)
+
+Everything below runs inside the Next.js app itself — no external services, no separate processes.
+
+- **Security headers** (`proxy.ts`, `next.config.ts`): a per-request nonce'd Content-Security-Policy (needed because Next's own hydration script is inline on every page — see `proxy.ts`'s comment), plus HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, and a locked-down `Permissions-Policy`.
+- **Rate limiting** (`lib/security/rate-limit.ts`): booking and cancellation are both capped per IP (5/15min, 10/15min) using a Postgres table, not an in-memory counter — this app runs as stateless, horizontally-scaled Vercel functions, so only a real row every instance can read back gives a correct count.
+- **Bot protection** (`lib/booking/schema.ts`, `components/booking/BookingConfirmForm.tsx`): a honeypot field no real user can see or reach, plus a server-issued minimum-submission-time check.
+- **Audit trail** (`lib/data/audit.ts`, `appointment_events` table): every booking creation and cancellation is logged with its IP and timestamp, separate from the appointment's current status.
+- **Error handling** (`app/error.tsx`, try/catch in both Server Actions): no stack trace, DB error, or file path ever reaches the browser — server logs get the detail, the customer gets one generic message.
+- **Cancellation abuse**: the token is a UUID v4 (~122 bits of entropy) — brute-forcing one isn't realistic, so no expiry was added for that reason; cancelling a confirmed appointment whose date has already passed is rejected regardless.
+
+See `supabase/migrations/001_security_hardening.sql` for the two new tables this phase adds.
+
 ## Setup
 
 ```bash
@@ -38,7 +51,7 @@ npm install
 cp .env.example .env.local   # fill in real Supabase + Resend values
 ```
 
-Run `supabase/schema.sql` then `supabase/seed.sql` in the Supabase SQL editor, then:
+Run `supabase/schema.sql` then `supabase/seed.sql` in the Supabase SQL editor (a fresh setup already includes phase 3's tables), then:
 
 ```bash
 npm run dev
@@ -46,10 +59,8 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+An already-running instance from before phase 3 only needs `supabase/migrations/001_security_hardening.sql` run once, rather than the full schema again.
+
 ## One known placeholder
 
 Barber portraits and the shop interior are hand-authored SVG illustrations (`public/images/`), not real photos — no licensed photo library was available, and hotlinking guessed stock-photo URLs wasn't an acceptable substitute for a client-facing site. Every `<Image>` call is written exactly as it would be for real photography.
-
-## Not finished
-
-This is phase 2 of 3. There's no rate limiting on the booking or cancellation actions, no CSRF-specific hardening beyond what Next.js Server Actions provide by default, no abuse/spam protection on the contact-adjacent forms, and no audit trail on cancellations. That's phase 3.

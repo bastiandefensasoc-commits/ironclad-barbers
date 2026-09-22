@@ -32,6 +32,17 @@ export async function SummaryStep({
       : barberChoice;
   const barber = resolvedBarberSlug ? await getBarberBySlug(resolvedBarberSlug) : undefined;
 
+  // Deliberately impure: this genuinely needs to be the real wall-clock
+  // moment this request rendered, so submitBooking can measure elapsed
+  // time against it (see the bot-defense note on BookingConfirmForm's
+  // formRenderedAt prop). React's purity rule is guarding against a
+  // different problem — a value that silently changes across a
+  // re-render — which doesn't apply here: this Server Component already
+  // runs its data fetches fresh per request, and this line only ever
+  // renders once per request, same as those.
+  // eslint-disable-next-line react-hooks/purity -- see comment above
+  const formRenderedAt = Date.now();
+
   return (
     <div>
       <Link href={timeStepHref(service.slug, barberChoice, date, time)} className="text-sm text-ink/70 hover:text-brass-dark">
@@ -57,7 +68,13 @@ export async function SummaryStep({
       </dl>
 
       <div className="mt-8 max-w-md">
-        <BookingConfirmForm serviceSlug={service.slug} barberChoice={barberChoice} date={date} time={time} />
+        <BookingConfirmForm
+          serviceSlug={service.slug}
+          barberChoice={barberChoice}
+          date={date}
+          time={time}
+          formRenderedAt={formRenderedAt}
+        />
       </div>
     </div>
   );

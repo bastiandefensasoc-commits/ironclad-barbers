@@ -35,6 +35,30 @@ export const bookingSchema = z.object({
 
 export type BookingInput = z.infer<typeof bookingSchema>;
 
+/**
+ * Bot-defense fields, deliberately kept OUT of bookingSchema above rather
+ * than added as extra properties on it. If the honeypot were a normal
+ * Zod field, a failed check would surface through the same
+ * `fieldErrors` object the real form fields use — visibly naming
+ * "honeypot" in the response tells an attacker the mechanism exists and
+ * what it's called, which defeats the point. These are parsed and
+ * checked separately in the Server Action, and a failure there returns
+ * the exact same generic message a rate-limit rejection would, so the
+ * two are indistinguishable from the outside.
+ */
+export const botDefenseSchema = z.object({
+  // A field no real user should ever fill — see BookingConfirmForm.tsx
+  // for how it's hidden from sighted, keyboard, and screen-reader users
+  // alike. Anything other than empty here means it was filled by
+  // something reading the DOM, not a person looking at the page.
+  website: z.string().optional(),
+  // Server-rendered when the summary step loads, compared against the
+  // submit time in the Server Action. A gap that's implausibly short
+  // for a human to have read the summary and typed three fields is
+  // treated as automated.
+  formRenderedAt: z.string().regex(/^\d+$/, "Invalid form state"),
+});
+
 /** Shape of a row actually written to appointments — service/barber slugs
  * have been resolved to their database ids by this point. */
 export const appointmentInsertSchema = z.object({

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import { headers } from "next/headers";
 import { getAllServices } from "@/lib/data/services";
 import { getAllBarbers } from "@/lib/data/barbers";
 import { ServiceGrid } from "@/components/services/ServiceGrid";
@@ -82,10 +83,19 @@ export default async function HomePage() {
   const barbers = await getAllBarbers();
 
   const jsonLd = buildHairSalonJsonLd();
+  // Browsers don't execute application/ld+json as script, so it's likely
+  // exempt from script-src enforcement regardless — the nonce is added
+  // anyway as cheap insurance against relying on that distinction holding
+  // in every browser. See middleware.ts for where this value comes from.
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
 
   return (
     <div>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script
+        type="application/ld+json"
+        nonce={nonce}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
       {/* Hero */}
       <section className="mx-auto max-w-6xl px-4 pb-16 pt-14 sm:px-6 sm:pt-20">
