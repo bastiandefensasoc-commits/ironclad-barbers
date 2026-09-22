@@ -29,7 +29,7 @@ export default async function BookPage({
   searchParams: Promise<SearchParams>;
 }) {
   const resolvedSearchParams = await searchParams;
-  const state = parseBookingState(resolvedSearchParams);
+  const state = await parseBookingState(resolvedSearchParams);
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">

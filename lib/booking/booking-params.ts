@@ -35,25 +35,33 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
  * to the earliest step that's still legitimate, instead of crashing or
  * skipping ahead on bad data. Called once, server-side, on every
  * request to /book — the step you see is always freshly re-validated
- * against the current mock data, never trusted blindly from the URL.
+ * against the real database, never trusted blindly from the URL. This
+ * function is `async` now (it wasn't in the mock-data phase) purely
+ * because the lookups it calls became real queries — the validation
+ * logic itself, and the "stop at the first invalid param" rule, are
+ * unchanged.
  */
-export function parseBookingState(searchParams: SearchParams): BookingState {
+export async function parseBookingState(searchParams: SearchParams): Promise<BookingState> {
   const serviceSlug = param(searchParams, "service");
-  const service = serviceSlug ? getServiceBySlug(serviceSlug) : undefined;
+  const service = serviceSlug ? await getServiceBySlug(serviceSlug) : undefined;
   if (!service) return { step: "service" };
 
   const barberParam = param(searchParams, "barber");
   const barberChoice: BarberChoice | undefined =
-    barberParam === ANY_BARBER ? ANY_BARBER : barberParam && getBarberBySlug(barberParam) ? barberParam : undefined;
+    barberParam === ANY_BARBER
+      ? ANY_BARBER
+      : barberParam && (await getBarberBySlug(barberParam))
+        ? barberParam
+        : undefined;
   if (!barberChoice) return { step: "barber", service };
-  const barber = barberChoice === ANY_BARBER ? undefined : getBarberBySlug(barberChoice);
+  const barber = barberChoice === ANY_BARBER ? undefined : await getBarberBySlug(barberChoice);
 
   const date = param(searchParams, "date");
-  const dateValid = !!date && ISO_DATE.test(date) && isDateAvailable(barberChoice, date);
+  const dateValid = !!date && ISO_DATE.test(date) && (await isDateAvailable(barberChoice, date));
   if (!dateValid) return { step: "date", service, barberChoice, barber };
 
   const time = param(searchParams, "time");
-  const slots = getSlotsForBarberChoice(barberChoice, date!, service.durationMinutes);
+  const slots = await getSlotsForBarberChoice(barberChoice, date!, service.durationMinutes);
   const timeValid = !!time && slots.some((slot) => slot.time === time && slot.available);
   if (!timeValid) return { step: "time", service, barberChoice, barber, date };
 

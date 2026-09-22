@@ -37,7 +37,9 @@ export function buildHairSalonJsonLd() {
       addressCountry: "US",
     },
     openingHoursSpecification: [
-      { "@type": "OpeningHoursSpecification", dayOfWeek: "Monday", opens: "10:00", closes: "18:00" },
+      // Monday is deliberately absent — the shop is closed shop-wide that
+      // day (see supabase/seed.sql), and schema.org's convention for a
+      // closed day is to omit it rather than list a zero-length span.
       { "@type": "OpeningHoursSpecification", dayOfWeek: "Tuesday", opens: "09:00", closes: "18:00" },
       { "@type": "OpeningHoursSpecification", dayOfWeek: "Wednesday", opens: "09:00", closes: "19:00" },
       { "@type": "OpeningHoursSpecification", dayOfWeek: "Thursday", opens: "09:00", closes: "19:00" },

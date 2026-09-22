@@ -15,7 +15,7 @@ import { BookingConfirmForm } from "@/components/booking/BookingConfirmForm";
  * and time, so this just asks which one. A real booking system does
  * the same assignment at confirmation time, not before.
  */
-export function SummaryStep({
+export async function SummaryStep({
   service,
   barberChoice,
   date,
@@ -28,9 +28,9 @@ export function SummaryStep({
 }) {
   const resolvedBarberSlug =
     barberChoice === ANY_BARBER
-      ? resolveAnyBarberForSlot(date, time, service.durationMinutes)
+      ? await resolveAnyBarberForSlot(date, time, service.durationMinutes)
       : barberChoice;
-  const barber = resolvedBarberSlug ? getBarberBySlug(resolvedBarberSlug) : undefined;
+  const barber = resolvedBarberSlug ? await getBarberBySlug(resolvedBarberSlug) : undefined;
 
   return (
     <div>
@@ -57,7 +57,7 @@ export function SummaryStep({
       </dl>
 
       <div className="mt-8 max-w-md">
-        <BookingConfirmForm />
+        <BookingConfirmForm serviceSlug={service.slug} barberChoice={barberChoice} date={date} time={time} />
       </div>
     </div>
   );

@@ -1,96 +1,137 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useActionState } from "react";
+import Link from "next/link";
+import type { BarberChoice } from "@/lib/types";
+import { submitBooking, type BookingActionState } from "@/lib/actions/booking";
+
+const initialState: BookingActionState = { status: "idle" };
 
 /**
- * Name, email, and phone live only here, as local component state —
- * deliberately never in the URL like the service/barber/date/time
- * selections are. Those are fine to expose in a shareable link;
- * contact details aren't, and URLs end up in browser history, server
- * logs, and referrer headers. This is also where the eventual backend
- * plugs in: the whole handleSubmit body becomes a POST to a Server
- * Action that writes a real Appointment row — the form fields and
- * validation don't need to change at all.
+ * Name, email, and phone live only in this form's own fields — deliberately
+ * never in the URL like the service/barber/date/time selections are.
+ * Those are fine to expose in a shareable link; contact details aren't,
+ * and URLs end up in browser history, server logs, and referrer headers.
+ * service/barber/date/time ride along as hidden inputs instead, the same
+ * way EnquiryForm passes propertyId — everything the Server Action needs
+ * to re-derive and re-validate the booking travels in one FormData
+ * payload, not split between props and inputs.
+ *
+ * `useActionState(submitBooking, initialState)` wires this form directly
+ * to the Server Action: `formAction` goes on the form's `action` prop,
+ * `state` is whatever submitBooking last returned, and `isPending` is
+ * true only while that server round trip is in flight — React tracks
+ * all of this automatically.
  */
-export function BookingConfirmForm() {
-  const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
-  const [confirmationCode] = useState(() => `IC-${Math.floor(1000 + Math.random() * 9000)}`);
+export function BookingConfirmForm({
+  serviceSlug,
+  barberChoice,
+  date,
+  time,
+}: {
+  serviceSlug: string;
+  barberChoice: BarberChoice;
+  date: string;
+  time: string;
+}) {
+  const [state, formAction, isPending] = useActionState(submitBooking, initialState);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setStatus("sending");
-    window.setTimeout(() => setStatus("sent"), 700);
-  }
-
-  if (status === "sent") {
+  if (state.status === "success" && state.confirmationToken) {
     return (
       <div className="rounded-2xl bg-charcoal p-6 text-cream">
         <p className="font-condensed text-2xl uppercase tracking-wide">Booked</p>
         <p className="mt-2 text-cream/80">
-          Confirmation <span className="font-medium text-brass">{confirmationCode}</span>. We&rsquo;ll
-          text you a reminder the day before — if you need to cancel or move it, just call the
-          shop.
+          We&rsquo;ve sent a confirmation to your email — if you need to cancel or move it, use the
+          link in that email, or{" "}
+          <Link href={`/cancel/${state.confirmationToken}`} className="text-brass underline">
+            cancel it here
+          </Link>
+          .
         </p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      <div>
-        <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-ink">
-          Full name
-        </label>
+    <form action={formAction} className="space-y-5">
+      <input type="hidden" name="serviceSlug" value={serviceSlug} />
+      <input type="hidden" name="barberChoice" value={barberChoice} />
+      <input type="hidden" name="date" value={date} />
+      <input type="hidden" name="time" value={time} />
+
+      <Field label="Full name" htmlFor="customerName" error={state.fieldErrors?.customerName}>
         <input
-          id="name"
-          name="name"
+          id="customerName"
+          name="customerName"
           type="text"
           required
           autoComplete="name"
           className="h-11 w-full rounded-lg border border-clay bg-white px-3 text-sm"
         />
-      </div>
+      </Field>
 
-      <div>
-        <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-ink">
-          Email
-        </label>
+      <Field label="Email" htmlFor="customerEmail" error={state.fieldErrors?.customerEmail}>
         <input
-          id="email"
-          name="email"
+          id="customerEmail"
+          name="customerEmail"
           type="email"
           required
           autoComplete="email"
           className="h-11 w-full rounded-lg border border-clay bg-white px-3 text-sm"
         />
-      </div>
+      </Field>
 
-      <div>
-        <label htmlFor="phone" className="mb-1.5 block text-sm font-medium text-ink">
-          Phone
-        </label>
+      <Field label="Phone" htmlFor="customerPhone" error={state.fieldErrors?.customerPhone}>
         <input
-          id="phone"
-          name="phone"
+          id="customerPhone"
+          name="customerPhone"
           type="tel"
           required
           autoComplete="tel"
           placeholder="512-555-0100"
           className="h-11 w-full rounded-lg border border-clay bg-white px-3 text-sm"
         />
-      </div>
+      </Field>
+
+      {state.status === "error" && !state.fieldErrors && (
+        <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+          {state.message}
+        </p>
+      )}
 
       <button
         type="submit"
-        disabled={status === "sending"}
+        disabled={isPending}
         className="flex h-12 w-full items-center justify-center rounded-full bg-brass text-sm font-semibold text-charcoal transition-colors hover:bg-brass-dark hover:text-cream disabled:opacity-60"
       >
-        {status === "sending" ? "Booking…" : "Confirm booking"}
+        {isPending ? "Booking…" : "Confirm booking"}
       </button>
       <p className="text-center text-xs text-ink/70">
         No charge now — you pay at the shop. Running more than 10 minutes late? Call us and we&rsquo;ll
         hold your slot if we can.
       </p>
     </form>
+  );
+}
+
+function Field({
+  label,
+  htmlFor,
+  error,
+  children,
+}: {
+  label: string;
+  htmlFor: string;
+  error?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label htmlFor={htmlFor} className="mb-1.5 block text-sm font-medium text-ink">
+        {label}
+      </label>
+      {children}
+      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+    </div>
   );
 }

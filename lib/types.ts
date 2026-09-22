@@ -6,12 +6,18 @@
  */
 
 export interface Service {
+  /** Database row id (uuid) — the foreign key appointments.service_id points at. */
+  id: string;
   slug: string;
   name: string;
   /** Drives slot length and overlap checks in the availability engine. */
   durationMinutes: number;
   price: number;
   description: string;
+  /** Not a database column — services.icon doesn't exist in the schema, since
+   * it's a fixed, small set of decorative assets tied to the service slug,
+   * not business data. Looked up by slug and attached client-side in
+   * lib/data/services.ts. */
   icon: string;
 }
 
@@ -19,6 +25,8 @@ export interface Service {
 export type WorkingHours = Record<number, { start: string; end: string } | null>;
 
 export interface Barber {
+  /** Database row id (uuid) — the foreign key appointments.barber_id points at. */
+  id: string;
   slug: string;
   name: string;
   bio: string;
@@ -29,17 +37,26 @@ export interface Barber {
   daysOff: string[];
 }
 
+export type AppointmentStatus = "confirmed" | "cancelled" | "completed";
+
+/** Mirrors the appointments table directly — this is the one type in this
+ * file that's a real database row shape, not a frontend-friendly reshaping
+ * of one, since nothing needs it presented any other way. */
 export interface Appointment {
   id: string;
-  serviceSlug: string;
-  barberSlug: string;
+  createdAt: string;
+  serviceId: string;
+  barberId: string;
   /** ISO date, "YYYY-MM-DD". */
   date: string;
   /** 24h "HH:mm". */
-  time: string;
+  startTime: string;
+  endTime: string;
   customerName: string;
-  email: string;
-  phone: string;
+  customerEmail: string;
+  customerPhone: string;
+  status: AppointmentStatus;
+  confirmationToken: string;
 }
 
 export interface TimeSlot {

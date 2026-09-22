@@ -9,7 +9,8 @@ import { ServiceGrid } from "@/components/services/ServiceGrid";
  * standalone /services page renders, since "pick a service" looks
  * identical in both places and both already link to this exact URL.
  */
-export function ServiceStep() {
+export async function ServiceStep() {
+  const services = await getAllServices();
   return (
     <div>
       <h1 className="font-condensed text-3xl uppercase tracking-wide text-charcoal sm:text-4xl">
@@ -17,7 +18,7 @@ export function ServiceStep() {
       </h1>
       <p className="mt-2 text-ink/70">First, what are you in for?</p>
       <div className="mt-8">
-        <ServiceGrid services={getAllServices()} showDescription />
+        <ServiceGrid services={services} showDescription />
       </div>
     </div>
   );

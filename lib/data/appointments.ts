@@ -1,34 +1,83 @@
-import type { Appointment } from "@/lib/types";
-import { addDays, todayISO } from "@/lib/booking/date-utils";
+import type { Appointment, AppointmentStatus } from "@/lib/types";
+import { createServiceRoleClient } from "@/lib/supabase/server";
 
-/**
- * Seeded bookings, relative to today's real date. These exist purely to
- * make the booking demo honest: without them every barber would look
- * wide open every day, which isn't what a real two-chair shop's
- * calendar looks like. This whole file is the piece a real backend
- * replaces outright — getAvailableSlots() in availability.ts reads
- * from this array today and from a database later, and nothing that
- * calls it needs to change either way.
- */
-const today = todayISO();
-
-const appointments: Appointment[] = [
-  { id: "seed-1", serviceSlug: "classic-cut", barberSlug: "marcus-webb", date: addDays(today, 1), time: "10:00", customerName: "Jake Donovan", email: "jake.donovan@example.com", phone: "512-555-0114" },
-  { id: "seed-2", serviceSlug: "skin-fade", barberSlug: "marcus-webb", date: addDays(today, 1), time: "14:00", customerName: "Reggie Voss", email: "reggie.voss@example.com", phone: "512-555-0122" },
-  { id: "seed-3", serviceSlug: "hot-towel-shave", barberSlug: "dante-ruiz", date: addDays(today, 2), time: "11:00", customerName: "Colin Ashby", email: "colin.ashby@example.com", phone: "512-555-0139" },
-  { id: "seed-4", serviceSlug: "kids-cut", barberSlug: "silas-grant", date: addDays(today, 2), time: "09:00", customerName: "Nora Prescott", email: "nora.prescott@example.com", phone: "512-555-0147" },
-  { id: "seed-5", serviceSlug: "cut-and-beard", barberSlug: "owen-bishop", date: addDays(today, 3), time: "15:00", customerName: "Marcus Ihe", email: "marcus.ihe@example.com", phone: "512-555-0158" },
-  { id: "seed-6", serviceSlug: "beard-trim", barberSlug: "marcus-webb", date: addDays(today, 3), time: "09:00", customerName: "Tomas Reyes", email: "tomas.reyes@example.com", phone: "512-555-0163" },
-  { id: "seed-7", serviceSlug: "skin-fade", barberSlug: "silas-grant", date: addDays(today, 3), time: "13:00", customerName: "Dev Patel", email: "dev.patel@example.com", phone: "512-555-0171" },
-  { id: "seed-8", serviceSlug: "classic-cut", barberSlug: "dante-ruiz", date: addDays(today, 4), time: "16:00", customerName: "Elliot Marsh", email: "elliot.marsh@example.com", phone: "512-555-0186" },
-  { id: "seed-9", serviceSlug: "hot-towel-shave", barberSlug: "owen-bishop", date: addDays(today, 4), time: "11:00", customerName: "Grant Feldman", email: "grant.feldman@example.com", phone: "512-555-0194" },
-  { id: "seed-10", serviceSlug: "cut-and-beard", barberSlug: "marcus-webb", date: addDays(today, 5), time: "12:00", customerName: "Owen Castellano", email: "owen.castellano@example.com", phone: "512-555-0207" },
-];
-
-export function getAllAppointments(): Appointment[] {
-  return appointments;
+interface AppointmentRow {
+  id: string;
+  created_at: string;
+  service_id: string;
+  barber_id: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string;
+  status: AppointmentStatus;
+  confirmation_token: string;
 }
 
-export function getAppointmentsForBarberOnDate(barberSlug: string, date: string): Appointment[] {
-  return appointments.filter((appt) => appt.barberSlug === barberSlug && appt.date === date);
+const SELECT_COLUMNS =
+  "id, created_at, service_id, barber_id, date, start_time, end_time, customer_name, customer_email, customer_phone, status, confirmation_token";
+
+function toAppointment(row: AppointmentRow): Appointment {
+  return {
+    id: row.id,
+    createdAt: row.created_at,
+    serviceId: row.service_id,
+    barberId: row.barber_id,
+    date: row.date,
+    // Postgres returns `time` columns as "HH:mm:ss" — trim to "HH:mm" to
+    // match the "HH:mm" format used everywhere else in the app.
+    startTime: row.start_time.slice(0, 5),
+    endTime: row.end_time.slice(0, 5),
+    customerName: row.customer_name,
+    customerEmail: row.customer_email,
+    customerPhone: row.customer_phone,
+    status: row.status,
+    confirmationToken: row.confirmation_token,
+  };
+}
+
+/**
+ * Every confirmed appointment for one barber on one day — the read
+ * availability.ts needs to know which slots are already taken. This has
+ * to use the service-role client: the whole point of "no public reads"
+ * on appointments is that the anon key can't see who else has booked,
+ * so computing availability (which inherently requires seeing other
+ * customers' confirmed times, just not their names/emails) is one of the
+ * few operations in this app that's genuinely privileged.
+ */
+export async function getConfirmedAppointmentsForBarberOnDate(
+  barberId: string,
+  date: string,
+): Promise<Appointment[]> {
+  const supabase = createServiceRoleClient();
+  const { data, error } = await supabase
+    .from("appointments")
+    .select(SELECT_COLUMNS)
+    .eq("barber_id", barberId)
+    .eq("date", date)
+    .eq("status", "confirmed");
+
+  if (error) throw new Error(`Failed to load appointments: ${error.message}`);
+  return (data ?? []).map(toAppointment);
+}
+
+export async function getAppointmentByToken(token: string): Promise<Appointment | undefined> {
+  const supabase = createServiceRoleClient();
+  const { data, error } = await supabase
+    .from("appointments")
+    .select(SELECT_COLUMNS)
+    .eq("confirmation_token", token)
+    .maybeSingle();
+
+  if (error) throw new Error(`Failed to load appointment: ${error.message}`);
+  return data ? toAppointment(data) : undefined;
+}
+
+export async function updateAppointmentStatus(token: string, status: AppointmentStatus): Promise<void> {
+  const supabase = createServiceRoleClient();
+  const { error } = await supabase.from("appointments").update({ status }).eq("confirmation_token", token);
+
+  if (error) throw new Error(`Failed to update appointment: ${error.message}`);
 }

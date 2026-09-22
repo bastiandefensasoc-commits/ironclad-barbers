@@ -1,66 +1,75 @@
 import type { Service } from "@/lib/types";
+import { createPublicClient } from "@/lib/supabase/server";
 
-const services: Service[] = [
-  {
-    slug: "classic-cut",
-    name: "Classic Cut",
-    durationMinutes: 30,
-    price: 32,
-    description:
-      "Scissor-and-clipper cut, tailored to how you actually wear it day to day — not a template. Finished with a clean neckline and a hot towel neck shave.",
-    icon: "/images/icon-scissors.svg",
-  },
-  {
-    slug: "skin-fade",
-    name: "Skin Fade",
-    durationMinutes: 40,
-    price: 38,
-    description:
-      "A tight fade taken down to the skin and blended by hand, not just a clipper guard swap. Finished with a straight-edge line-up around the hairline.",
-    icon: "/images/icon-clippers.svg",
-  },
-  {
-    slug: "beard-trim",
-    name: "Beard Trim",
-    durationMinutes: 20,
-    price: 20,
-    description:
-      "Shape and length, cleaned up with a straight-razor edge along the cheek and neckline. Fifteen minutes to look like you didn't need one.",
-    icon: "/images/icon-beard.svg",
-  },
-  {
-    slug: "hot-towel-shave",
-    name: "Hot Towel Shave",
-    durationMinutes: 35,
-    price: 40,
-    description:
-      "The traditional straight-razor shave: hot towel prep to soften the beard, two passes with the blade, and a cold towel finish with balm.",
-    icon: "/images/icon-razor.svg",
-  },
-  {
-    slug: "cut-and-beard",
-    name: "Cut & Beard Combo",
-    durationMinutes: 50,
-    price: 52,
-    description:
-      "A full cut and a full beard trim in one visit, done by the same barber so the two actually match. Our most-booked service.",
-    icon: "/images/icon-combo.svg",
-  },
-  {
-    slug: "kids-cut",
-    name: "Kids Cut",
-    durationMinutes: 25,
-    price: 22,
-    description:
-      "For 12 and under. Quick, patient, and we're used to a squirmy first haircut — no drama, no pressure, a sticker at the end if they want one.",
-    icon: "/images/icon-kids.svg",
-  },
-];
+/**
+ * Service icons are a fixed set of six decorative badge images tied to a
+ * service's slug — not business data, so they don't live in the
+ * database (see the comment on Service.icon in lib/types.ts). Every
+ * query below attaches the right one by slug before returning.
+ */
+const SERVICE_ICONS: Record<string, string> = {
+  "classic-cut": "/images/icon-scissors.svg",
+  "skin-fade": "/images/icon-clippers.svg",
+  "beard-trim": "/images/icon-beard.svg",
+  "hot-towel-shave": "/images/icon-razor.svg",
+  "cut-and-beard": "/images/icon-combo.svg",
+  "kids-cut": "/images/icon-kids.svg",
+};
 
-export function getAllServices(): Service[] {
-  return services;
+interface ServiceRow {
+  id: string;
+  slug: string;
+  name: string;
+  duration_minutes: number;
+  price: number;
+  description: string;
 }
 
-export function getServiceBySlug(slug: string): Service | undefined {
-  return services.find((service) => service.slug === slug);
+function toService(row: ServiceRow): Service {
+  return {
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    durationMinutes: row.duration_minutes,
+    price: row.price,
+    description: row.description,
+    icon: SERVICE_ICONS[row.slug] ?? "/images/icon-scissors.svg",
+  };
+}
+
+export async function getAllServices(): Promise<Service[]> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("services")
+    .select("id, slug, name, duration_minutes, price, description")
+    .eq("active", true)
+    .order("name");
+
+  if (error) throw new Error(`Failed to load services: ${error.message}`);
+  return (data ?? []).map(toService);
+}
+
+export async function getServiceBySlug(slug: string): Promise<Service | undefined> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("services")
+    .select("id, slug, name, duration_minutes, price, description")
+    .eq("slug", slug)
+    .eq("active", true)
+    .maybeSingle();
+
+  if (error) throw new Error(`Failed to load service "${slug}": ${error.message}`);
+  return data ? toService(data) : undefined;
+}
+
+export async function getServiceById(id: string): Promise<Service | undefined> {
+  const supabase = createPublicClient();
+  const { data, error } = await supabase
+    .from("services")
+    .select("id, slug, name, duration_minutes, price, description")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) throw new Error(`Failed to load service "${id}": ${error.message}`);
+  return data ? toService(data) : undefined;
 }

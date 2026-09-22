@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { BarberChoice, Service } from "@/lib/types";
-import { isDateAvailable } from "@/lib/booking/availability";
+import { getMonthAvailability } from "@/lib/actions/booking";
 import { dateStepHref, barberStepHref } from "@/lib/booking/booking-params";
 import { addDays, dayOfWeek, formatDateLabel, todayISO } from "@/lib/booking/date-utils";
 
@@ -28,22 +28,6 @@ function addMonths({ year, month }: MonthKey, delta: number): MonthKey {
 
 function sameMonth(a: MonthKey, b: MonthKey): boolean {
   return a.year === b.year && a.month === b.month;
-}
-
-/**
- * The roving-tabindex position has to start on a real, reachable
- * (non-disabled) date — if it defaulted to `today` unconditionally and
- * today happened to be a barber's day off, that button would be
- * disabled, nothing else would carry tabIndex 0, and Tab would skip
- * the entire calendar with no way to reach it via keyboard at all.
- */
-function findInitialFocusDate(barberChoice: BarberChoice, fromISO: string): string {
-  const SEARCH_WINDOW_DAYS = 120;
-  for (let offset = 0; offset < SEARCH_WINDOW_DAYS; offset++) {
-    const candidate = addDays(fromISO, offset);
-    if (isDateAvailable(barberChoice, candidate)) return candidate;
-  }
-  return fromISO;
 }
 
 /** Builds a 6-row×7-col grid of ISO date strings, null for padding cells outside the month. */
@@ -77,6 +61,14 @@ function buildMonthGrid({ year, month }: MonthKey): (string | null)[][] {
  * stopping on all ~30 days. Arrow keys move the roving position and
  * imperatively focus the target button via a ref map, since moving
  * focus is a DOM operation React's declarative model doesn't do for us.
+ *
+ * The one piece of real complexity phase 2 added: this component can no
+ * longer know synchronously which days are open. It fetches one whole
+ * month's availability from getMonthAvailability (a Server Action) via
+ * useEffect whenever the visible month changes, and disables every day
+ * until that data has actually arrived — see the isLoading handling
+ * below for why that matters for keyboard focus specifically, not just
+ * what's rendered.
  */
 export function DateStep({
   service,
@@ -95,12 +87,61 @@ export function DateStep({
   const [visibleMonth, setVisibleMonth] = useState<MonthKey>(
     selectedDate ? monthKeyFromISO(selectedDate) : currentMonthKey,
   );
-  const [focusedDate, setFocusedDate] = useState<string>(
-    () => selectedDate ?? findInitialFocusDate(barberChoice, today),
-  );
+  const [focusedDate, setFocusedDate] = useState<string>(selectedDate ?? today);
+  const [availability, setAvailability] = useState<Record<string, boolean>>({});
+  const [isLoading, setIsLoading] = useState(true);
 
   const buttonRefs = useRef(new Map<string, HTMLButtonElement>());
   const weeks = useMemo(() => buildMonthGrid(visibleMonth), [visibleMonth]);
+
+  // Refetches whenever the visible month (or the barber choice, though
+  // that doesn't change once this step is reached) changes. `cancelled`
+  // guards against a slow response for a month the user has already
+  // navigated away from overwriting the data for the one they're
+  // looking at now.
+  useEffect(() => {
+    let cancelled = false;
+    // Setting this synchronously, before the async call below, is what
+    // makes the loading state actually show *while* the fetch is in
+    // flight rather than only after — moving it into the .then() would
+    // defeat the point of it. This is the React docs' own recommended
+    // shape for an effect that fetches data (react.dev/reference/react/useEffect#fetching-data-with-effects).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsLoading(true);
+
+    getMonthAvailability(barberChoice, visibleMonth.year, visibleMonth.month).then((results) => {
+      if (cancelled) return;
+      const map: Record<string, boolean> = {};
+      for (const { date, available } of results) map[date] = available;
+      setAvailability(map);
+      setIsLoading(false);
+
+      // If the roving-tabindex target isn't actually open (most commonly:
+      // it defaulted to `today` and today turned out to be a day off) and
+      // we now have real data for a day that is, retarget it — without
+      // this, the initial Tab into the calendar could land on a disabled
+      // button with nothing else in the tab order to reach.
+      const stillFocusable = map[focusedDate];
+      if (!stillFocusable) {
+        const firstOpenInMonth = Object.entries(map).find(([, open]) => open)?.[0];
+        if (firstOpenInMonth) setFocusedDate(firstOpenInMonth);
+      }
+
+      // Re-claim DOM focus after a month-boundary navigation: the button
+      // the user just arrow-keyed onto may have rendered disabled (data
+      // not loaded yet) and lost focus to the page body when its month
+      // was still showing stale state. Once real data confirms it's
+      // open, pull focus back onto it.
+      requestAnimationFrame(() => {
+        if (map[focusedDate]) buttonRefs.current.get(focusedDate)?.focus();
+      });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- focusedDate is read, not a dependency: including it would refetch on every focus change instead of only on month navigation.
+  }, [barberChoice, visibleMonth.year, visibleMonth.month]);
 
   function focusDate(iso: string) {
     setFocusedDate(iso);
@@ -163,6 +204,7 @@ export function DateStep({
           </button>
           <p className="font-condensed text-xl uppercase tracking-wide text-charcoal" aria-live="polite">
             {monthLabel}
+            {isLoading && <span className="sr-only"> — loading availability</span>}
           </p>
           <button
             type="button"
@@ -192,7 +234,7 @@ export function DateStep({
                 {week.map((iso, dayIndex) => {
                   if (!iso) return <td key={dayIndex} />;
 
-                  const available = isDateAvailable(barberChoice, iso);
+                  const available = !isLoading && (availability[iso] ?? false);
                   const isSelected = iso === selectedDate;
                   const isToday = iso === today;
                   const isRoving = iso === focusedDate;

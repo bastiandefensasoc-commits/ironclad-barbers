@@ -77,9 +77,9 @@ const faqs = [
   },
 ];
 
-export default function HomePage() {
-  const services = getAllServices();
-  const barbers = getAllBarbers();
+export default async function HomePage() {
+  const services = await getAllServices();
+  const barbers = await getAllBarbers();
 
   const jsonLd = buildHairSalonJsonLd();
 
@@ -289,7 +289,7 @@ export default function HomePage() {
                 </div>
                 <div className="flex justify-between gap-4 py-2">
                   <dt>Monday</dt>
-                  <dd>10am – 6pm, one chair</dd>
+                  <dd>Closed</dd>
                 </div>
               </dl>
             </div>

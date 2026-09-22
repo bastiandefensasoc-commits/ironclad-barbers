@@ -5,16 +5,17 @@ import { dateStepHref, timeStepHref } from "@/lib/booking/booking-params";
 import { formatDateLabel } from "@/lib/booking/date-utils";
 
 /**
- * Server component: getSlotsForBarberChoice is a plain function over
- * mock data today, so it can run at request time on the server with no
- * client round-trip. Every slot in working hours renders — booked and
- * past ones included, just disabled and struck through — because the
- * brief specifically asks for unavailable slots to be visibly blocked,
- * not hidden. Hiding them would make the shop look less busy than it
- * is and would make "why can't I pick 2pm" a support question instead
- * of something the page already answers.
+ * Server component: getSlotsForBarberChoice is now a real database read,
+ * and being `async` is all that changes here — it still runs at request
+ * time on the server with no client round-trip, no loading state to
+ * manage. Every slot in working hours renders — booked and past ones
+ * included, just disabled and struck through — because the brief
+ * specifically asks for unavailable slots to be visibly blocked, not
+ * hidden. Hiding them would make the shop look less busy than it is and
+ * would make "why can't I pick 2pm" a support question instead of
+ * something the page already answers.
  */
-export function TimeStep({
+export async function TimeStep({
   service,
   barberChoice,
   date,
@@ -23,7 +24,7 @@ export function TimeStep({
   barberChoice: BarberChoice;
   date: string;
 }) {
-  const slots = getSlotsForBarberChoice(barberChoice, date, service.durationMinutes);
+  const slots = await getSlotsForBarberChoice(barberChoice, date, service.durationMinutes);
   const hasAnySlots = slots.length > 0;
   const hasOpenSlots = slots.some((slot) => slot.available);
 

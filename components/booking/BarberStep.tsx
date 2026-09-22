@@ -7,8 +7,8 @@ import { barberStepHref } from "@/lib/booking/booking-params";
 import { Badge } from "@/components/ui/Badge";
 import { StaggerContainer, StaggerItem } from "@/components/motion/StaggerContainer";
 
-export function BarberStep({ service }: { service: Service }) {
-  const barbers = getAllBarbers();
+export async function BarberStep({ service }: { service: Service }) {
+  const barbers = await getAllBarbers();
 
   return (
     <div>

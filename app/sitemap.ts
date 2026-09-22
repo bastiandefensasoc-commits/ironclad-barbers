@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { getAllBarbers } from "@/lib/data/barbers";
 import { siteUrl } from "@/lib/seo";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: siteUrl, changeFrequency: "monthly", priority: 1 },
     { url: `${siteUrl}/services`, changeFrequency: "monthly", priority: 0.8 },
@@ -12,7 +12,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${siteUrl}/contact`, changeFrequency: "yearly", priority: 0.5 },
   ];
 
-  const barberRoutes: MetadataRoute.Sitemap = getAllBarbers().map((barber) => ({
+  const barbers = await getAllBarbers();
+  const barberRoutes: MetadataRoute.Sitemap = barbers.map((barber) => ({
     url: `${siteUrl}/barbers/${barber.slug}`,
     changeFrequency: "monthly",
     priority: 0.6,

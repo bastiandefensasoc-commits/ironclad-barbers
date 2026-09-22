@@ -67,7 +67,7 @@ export default function ContactPage() {
           <div className="rounded-2xl bg-charcoal p-6 text-cream">
             <h2 className="font-condensed text-xl uppercase tracking-wide">Hours</h2>
             <dl className="mt-3 space-y-1.5 text-sm">
-              <Row label="Monday" value="10am – 6pm" note="One chair only" />
+              <Row label="Monday" value="Closed" />
               <Row label="Tuesday" value="9am – 6pm" />
               <Row label="Wednesday" value="9am – 7pm" />
               <Row label="Thursday" value="9am – 7pm" />

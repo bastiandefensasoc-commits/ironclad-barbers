@@ -9,7 +9,8 @@ export const metadata: Metadata = {
     "Meet the four barbers at Ironclad Barbers in Austin — specialties, bios, and each barber's own availability.",
 };
 
-export default function BarbersPage() {
+export default async function BarbersPage() {
+  const barbers = await getAllBarbers();
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
       <FadeUp>
@@ -22,7 +23,7 @@ export default function BarbersPage() {
         </p>
       </FadeUp>
       <div className="mt-10">
-        <BarberGrid barbers={getAllBarbers()} />
+        <BarberGrid barbers={barbers} />
       </div>
     </div>
   );

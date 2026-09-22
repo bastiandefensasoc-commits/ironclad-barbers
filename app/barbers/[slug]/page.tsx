@@ -3,14 +3,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAllBarbers, getBarberBySlug } from "@/lib/data/barbers";
-import { formatDateLabel, isPastDate } from "@/lib/booking/date-utils";
+import { formatDateLabel, isPastDate, dayOfWeek } from "@/lib/booking/date-utils";
 import { Badge } from "@/components/ui/Badge";
 import { FadeUp } from "@/components/motion/FadeUp";
 
 const WEEKDAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-export function generateStaticParams() {
-  return getAllBarbers().map((barber) => ({ slug: barber.slug }));
+export async function generateStaticParams() {
+  const barbers = await getAllBarbers();
+  return barbers.map((barber) => ({ slug: barber.slug }));
 }
 
 export async function generateMetadata({
@@ -19,7 +20,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const barber = getBarberBySlug(slug);
+  const barber = await getBarberBySlug(slug);
   if (!barber) return {};
 
   return {
@@ -34,10 +35,15 @@ export default async function BarberPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const barber = getBarberBySlug(slug);
+  const barber = await getBarberBySlug(slug);
   if (!barber) notFound();
 
-  const upcomingDaysOff = barber.daysOff.filter((date) => !isPastDate(date));
+  // Mondays are excluded here even though they're technically in
+  // daysOff — every barber's working_hours already shows Monday as
+  // closed (see supabase/seed.sql), so listing ~26 individually-seeded
+  // Monday dates would just be noise on top of what "Weekly hours"
+  // already says. This shows only the genuine one-off exceptions.
+  const upcomingDaysOff = barber.daysOff.filter((date) => !isPastDate(date) && dayOfWeek(date) !== 1);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
