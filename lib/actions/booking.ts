@@ -154,7 +154,11 @@ export async function submitBooking(
     // and the cancel link regardless, and generating it up front means the
     // insert never has to read anything back afterward (see the comment
     // below on why that matters for what the anon key is allowed to do).
+    // appointmentId is generated the same way, for the same reason: the
+    // audit write right after the insert needs the row's id, and that's
+    // cheaper to hand it up front than to ask for it back.
     const confirmationToken = crypto.randomUUID();
+    const appointmentId = crypto.randomUUID();
 
     // This insert deliberately uses the public (anon-key) client, not the
     // service-role one — the actual write a customer's browser causes
@@ -162,26 +166,25 @@ export async function submitBooking(
     // allows, which is "insert one confirmed appointment," full stop. And
     // deliberately no .select() chained after it: reading the row back
     // would require a select policy on appointments that doesn't exist by
-    // design, so an otherwise-successful insert would report as an error.
-    // We don't need the row back anyway — we already generated every value
-    // that's in it.
+    // design, so an otherwise-successful insert would report as an RLS
+    // error even though the insert itself went through — this bit for
+    // real during phase-3 testing (the id fix below is the actual fix,
+    // this comment is the postmortem). We don't need the row back anyway
+    // — we already generated every value that's in it, id included.
     const supabase = createPublicClient();
-    const { data: inserted, error } = await supabase
-      .from("appointments")
-      .insert({
-        service_id: service.id,
-        barber_id: barber.id,
-        date,
-        start_time: time,
-        end_time: endTime,
-        customer_name: customerName,
-        customer_email: customerEmail,
-        customer_phone: customerPhone,
-        status: "confirmed",
-        confirmation_token: confirmationToken,
-      })
-      .select("id")
-      .single();
+    const { error } = await supabase.from("appointments").insert({
+      id: appointmentId,
+      service_id: service.id,
+      barber_id: barber.id,
+      date,
+      start_time: time,
+      end_time: endTime,
+      customer_name: customerName,
+      customer_email: customerEmail,
+      customer_phone: customerPhone,
+      status: "confirmed",
+      confirmation_token: confirmationToken,
+    });
 
     if (error) {
       // 23P01 = exclusion_violation. This is the rare race the re-check
@@ -201,7 +204,7 @@ export async function submitBooking(
     // appointment itself already exists, so a logging failure here must
     // never be treated as the booking having failed.
     try {
-      await recordAppointmentEvent(inserted.id, "created", ip);
+      await recordAppointmentEvent(appointmentId, "created", ip);
     } catch (err) {
       console.error("Failed to record appointment creation event:", err);
     }
