@@ -1,5 +1,8 @@
 # Ironclad Barbers
 
+![Status](https://img.shields.io/badge/status-complete-success)
+![Phases](https://img.shields.io/badge/phases-3%2F3-success)
+
 A fictional two-chair barbershop in Austin, TX — portfolio piece #5 in a daily project series. Built in 3 phases: frontend (URL-as-state booking flow), real backend (Supabase + Server Actions), and security hardening. All three are done.
 
 ## Stack
